@@ -5,6 +5,7 @@ const cors = require('cors');
 const admin = require("firebase-admin");
 const app = express();
 const port = process.env.PORT || 5000;
+const ObjectId = require('mongodb').ObjectId;
 
 // doctors-portal-firebase-adminsdk.json 
 
@@ -70,6 +71,13 @@ async function run() {
             const cursor = appointmentsCollection.find(query);
             const appointments = await cursor.toArray();
             res.json(appointments);
+        })
+        //appointment data show
+        app.get('/appointments/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await appointmentsCollection.findOne(query);
+            res.json(result);
         })
         //USER INFO POST TO THE DATABASE
         app.post('/users', async (req, res) => {
