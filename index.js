@@ -172,6 +172,13 @@ async function run() {
             res.json(result);
         })
 
+        //doctors show in ui
+        app.get('/doctors', async (req, res) => {
+            const cursor = doctorsCollection.find({});
+            const doctors = await cursor.toArray();
+            res.json(doctors);
+        })
+
         //stripe related work
         app.post('/create-payment-intent', async (req, res) => {
             const paymentInfo = req.body;
