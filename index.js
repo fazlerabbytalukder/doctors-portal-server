@@ -7,6 +7,9 @@ const app = express();
 const port = process.env.PORT || 5000;
 const ObjectId = require('mongodb').ObjectId;
 
+//stripe related work
+const stripe = require('stripe')(process.env.STRIPE_SECRET)
+
 // doctors-portal-firebase-adminsdk.json 
 
 
@@ -79,6 +82,19 @@ async function run() {
             const result = await appointmentsCollection.findOne(query);
             res.json(result);
         })
+        //UPDATE APPOINTMENT BY PAYMENT
+        app.put('/appointments/:id', async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    payment: payment
+                }
+            };
+            const result = await appointmentsCollection.updateOne(filter, updateDoc);
+            res.json(result);
+        })
         //USER INFO POST TO THE DATABASE
         app.post('/users', async (req, res) => {
             const user = req.body;
@@ -131,6 +147,20 @@ async function run() {
                 res.json({ admin: isAdmin });
             }
             // res.json('dd');
+        })
+
+        //stripe related work
+        app.post('/create-payment-intent', async (req, res) => {
+            const paymentInfo = req.body;
+            const amount = paymentInfo.price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: "usd",
+                amount: amount,
+                payment_method_types: [
+                    "card"
+                ]
+            });
+            res.json({clientSecret: paymentIntent.client_secret})
         })
 
 
